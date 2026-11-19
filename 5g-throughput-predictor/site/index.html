@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>5G Throughput Predictor</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">AIoT course project · recorded sensor data</p>
+        <h1>5G Throughput Predictor</h1>
+        <p class="intro">Can recent radio measurements predict whether the next
+          recorded window has low, medium, or high throughput?</p>
+      </div>
+      <span class="mode">RECORDED REPLAY</span>
+    </header>
+
+    <div id="error" class="error" hidden></div>
+
+    <section class="summary" aria-label="Test results">
+      <div class="stat">
+        <span class="stat-label">Random forest macro-F1</span>
+        <strong id="model-f1">—</strong>
+        <small>Held-out test runs</small>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Last-band baseline macro-F1</span>
+        <strong id="baseline-f1">—</strong>
+        <small>Predicts the current band again</small>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Test windows</span>
+        <strong id="test-count">—</strong>
+        <small id="run-count">Across separate runs</small>
+      </div>
+    </section>
+
+    <section class="panel playback" aria-labelledby="replay-title">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Test trace</p>
+          <h2 id="replay-title">Replay one recording</h2>
+        </div>
+        <label class="run-label">Recording
+          <select id="run-select" aria-label="Select held-out recording"></select>
+        </label>
+      </div>
+      <div class="controls">
+        <button id="play" class="primary" type="button">Play</button>
+        <button id="step" type="button">Reveal next</button>
+        <button id="reset" type="button">Reset</button>
+        <button id="failure" type="button">Jump to a transition error</button>
+        <label class="speed-label">Speed
+          <select id="speed">
+            <option value="900">Slow</option>
+            <option value="450" selected>Normal</option>
+            <option value="140">Fast</option>
+          </select>
+        </label>
+      </div>
+      <input id="seek" type="range" min="0" max="0" value="0"
+             aria-label="Revealed predictions">
+      <div class="progress">
+        <span id="progress-text">Waiting for results</span>
+        <span id="running-accuracy"></span>
+      </div>
+    </section>
+
+    <section class="live-grid" aria-label="Current prediction">
+      <article class="panel observation">
+        <p class="eyebrow">Known now</p>
+        <h2>Current observation</h2>
+        <div class="big-number"><span id="throughput">—</span><span> Mbps</span></div>
+        <p id="observed-band" class="band-caption">Current band: —</p>
+        <dl>
+          <div><dt>Window</dt><dd id="window">—</dd></div>
+          <div><dt>5G state</dt><dd id="nr-status">—</dd></div>
+          <div><dt>NR signal RSRP</dt><dd id="rsrp">—</dd></div>
+        </dl>
+      </article>
+      <article class="panel forecast">
+        <p class="eyebrow">Forecast from current and earlier data</p>
+        <h2>Next window prediction</h2>
+        <div id="prediction" class="band-pill neutral">—</div>
+        <p id="confidence" class="muted">Model confidence: —</p>
+        <p id="baseline" class="baseline">Last-band baseline: —</p>
+        <div id="outcome" class="outcome" aria-live="polite">
+          The measured next band stays hidden until you reveal it.
+        </div>
+      </article>
+    </section>
+
+    <section class="panel chart-panel" aria-labelledby="timeline-title">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow">Prediction timeline</p>
+          <h2 id="timeline-title">Measured versus predicted bands</h2>
+        </div>
+        <div class="legend" aria-label="Band colors">
+          <span><i class="swatch low"></i> Low</span>
+          <span><i class="swatch medium"></i> Medium</span>
+          <span><i class="swatch high"></i> High</span>
+        </div>
+      </div>
+      <canvas id="timeline" height="190" role="img"
+              aria-label="Two rows showing revealed actual and predicted throughput bands"></canvas>
+      <p class="hint">Only revealed windows are colored. Red outlines mark incorrect predictions.
+        The outlined column is the next prediction to reveal.</p>
+    </section>
+
+    <section class="bottom-grid">
+      <article class="panel">
+        <p class="eyebrow">Held-out test set</p>
+        <h2>Confusion matrix</h2>
+        <p class="hint">Rows are measured bands; columns are predicted bands.</p>
+        <table class="matrix" aria-label="Test confusion matrix">
+          <thead><tr><th></th><th>Low</th><th>Medium</th><th>High</th></tr></thead>
+          <tbody id="matrix-body"></tbody>
+        </table>
+      </article>
+      <article class="panel">
+        <p class="eyebrow">Evaluation</p>
+        <h2>Recall by measured band</h2>
+        <div id="recall-bars" class="recall-bars"></div>
+        <p id="transition-score" class="hint"></p>
+      </article>
+    </section>
+
+    <footer>
+      <p id="thresholds"></p>
+      <p>Data: <a href="https://networking.umn.edu/lumos5g">Lumos5G research team</a>.
+        Reference notebooks and CSV:
+        <a href="https://github.com/av-troshin77/5gthroughput">5gthroughput on GitHub</a>.
+        Predictions, charts, and evaluation in this app were generated by this project’s
+        classification code.</p>
+    </footer>
+  </main>
+  <script src="app.js" defer></script>
+</body>
+</html>
