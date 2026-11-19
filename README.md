@@ -8,26 +8,42 @@ The dashboard is a **recorded replay**, not a live 5G measurement.
 
 ## Get started
 
-You need Python 3.10 or newer. The reference repository supplies the CSV;
-the CSV is not included in this project folder.
+### Run the dashboard
+
+You need Python 3.10 or newer. The dashboard uses the predictions saved in
+`site/results.json`, so you can run it without installing packages or downloading
+the dataset.
 
 ```sh
-git clone --depth 1 https://github.com/av-troshin77/5gthroughput.git reference-5gthroughput
-cd 5g-throughput-predictor
+git clone https://github.com/coopgoodale/5G-Connection-Throughput-Predictor.git
+cd 5G-Connection-Throughput-Predictor
+python3 -m http.server 8000 --directory site
+```
+
+Open [http://localhost:8000](http://localhost:8000) in your browser. Keep the
+terminal open while using the dashboard. Press `Ctrl+C` to stop the server.
+
+On Windows, use `python` instead of `python3`.
+
+### Optional: Retrain the model
+
+To generate new predictions, stop the server and run the following commands
+from the `5G-Connection-Throughput-Predictor` folder. The first command downloads
+the reference repository containing the Lumos5G dataset.
+
+```sh
+git clone --depth 1 https://github.com/av-troshin77/5gthroughput.git ../reference-5gthroughput
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install -r requirements.txt
 python train.py --data ../reference-5gthroughput/Lumos5G-v1.0.csv
-python -m http.server 8000 --directory site
 ```
 
-Open http://localhost:8000. On Windows, activate with
-**.venv\Scripts\activate** and use **python** instead of **python3**.
-Run the clone command from the parent folder containing this project.
-Alternatively, download the CSV from the
-[Lumos5G team](https://networking.umn.edu/lumos5g) and pass its path to
-**--data**. The included **site/results.json** lets you view the replay
-before retraining; running the command replaces it with your results.
+On Windows PowerShell, use `python -m venv .venv` to create the environment
+and `.\.venv\Scripts\Activate.ps1` to activate it.
+
+Retraining replaces `site/results.json` with your new predictions and evaluation
+metrics. Start the server again and refresh the dashboard to see the results.
 
 ## What the code does
 
@@ -56,9 +72,9 @@ predictions, measured values, and metrics for the held-out runs. The browser
 replays these exported predictions; it does not train a model or contact a
 remote prediction service.
 
-With the CSV linked above, the included result is **0.832 macro-F1** on 18
+With the CSV linked above, the included result is **0.833 macro-F1** on 18
 held-out test runs, compared with **0.813** for the last-band baseline.
-Medium-band recall is **0.692**, lower than Low and High. These are measured
+Medium-band recall is **0.693**, lower than Low and High. These are measured
 results from this split, not promised performance on another network.
 
 ## Evaluation and limitations
